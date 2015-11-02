@@ -2,9 +2,9 @@
 
 from flask import Blueprint, render_template
 
-blueprint = Blueprint('public', __name__, static_folder='../static')
+blueprint = Blueprint('auth', __name__, static_folder='../static', url_prefix='/auth')
 
 
 @blueprint.route('/')
-def home():
+def login():
     return render_template('public/home.html')
