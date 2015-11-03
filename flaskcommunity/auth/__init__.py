@@ -1,11 +1,11 @@
 
 
-from flaskcommunity.auth.backends.eveonline import EVEOnlineAuthBackend
+from flaskcommunity.auth.backends import eveonline
 
 
 def configure_auth_backends(app):
     auth_backends = {
-        'eveonline': EVEOnlineAuthBackend(),
+        'eveonline': eveonline,
     }
 
     if len(app.config['AUTH_WHITELIST']) > 1 and app.config['AUTH_WHITELIST'] is not '':
@@ -19,3 +19,6 @@ def configure_auth_backends(app):
                 del auth_backends[backend]
 
     app.config['auth_backends'] = auth_backends
+
+    for name, backend in auth_backends.iteritems():
+        app.register_blueprint(backend.blueprint)
