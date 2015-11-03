@@ -1,12 +1,11 @@
 
 
-from flaskcommunity.auth import eve, battlenet
+from flaskcommunity.auth.backends.eveonline import EVEOnlineAuthBackend
 
 
 def configure_auth_backends(app):
     auth_backends = {
-        'eve': eve,
-        'battlenet': battlenet,
+        'eveonline': EVEOnlineAuthBackend(),
     }
 
     if len(app.config['AUTH_WHITELIST']) > 1 and app.config['AUTH_WHITELIST'] is not '':

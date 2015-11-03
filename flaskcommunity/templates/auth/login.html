@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h1>Test</h1>
+    {% for backend in context.login_info %}
+        {{ backend.link }}
+        <img src="{{ backend.image }}" />
+    {% endfor %}
+{% endblock %}
