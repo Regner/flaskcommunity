@@ -3,7 +3,8 @@
 {% block body %}
     <h1>Test</h1>
     {% for backend in context.login_info %}
-        {{ backend.link }}
-        <img src="{{ backend.image }}" />
+        <a href="{{ url_for(backend.link) }}">
+            <img src="{{ url_for('static', filename=backend.image) }}" />
+        </a>
     {% endfor %}
 {% endblock %}

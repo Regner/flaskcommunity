@@ -6,7 +6,7 @@ from flaskcommunity.extentions import oauth
 
 blueprint = Blueprint('eveonline', __name__, static_folder='../static', url_prefix='/auth/eveonline')
 oauth = oauth.remote_app('eveonline', app_key='EVEONLINE')
-login_image = 'eveonline.png'
+login_image = 'img/auth_backends/eveonline.png'
 
 
 @blueprint.route('/login')
