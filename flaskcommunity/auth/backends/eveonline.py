@@ -1,68 +1,46 @@
 
 
-import os
-
 from datetime import datetime
 
-from flask import Blueprint, redirect, url_for, request, session, current_app
+from flask import request, session
+
+from flask.ext.login import login_user
 
 from flaskcommunity.extentions import oauth, db
 from flaskcommunity.auth.models import UserModel
-
-current_app.config['EVEONLINE'] = {
-    'consumer_key': os.environ.get('FC_AUTH_EVE_KEY'),
-    'consumer_secret': os.environ.get('FC_AUTH_EVE_SECRET'),
-    'base_url': 'https://login.eveonline.com/oauth/',
-    'access_token_url': 'https://login.eveonline.com/oauth/token',
-    'access_token_method': 'POST',
-    'authorize_url': 'https://login.eveonline.com/oauth/authorize',
-}
-
-blueprint = Blueprint('eveonline', __name__, static_folder='../static', url_prefix='/auth/eveonline')
-oauth = oauth.remote_app('eveonline', app_key='EVEONLINE')
-login_image = 'img/auth_backends/eveonline.png'
+from flaskcommunity.auth.backends.base import BaseAuthBackend
 
 
-def get_image_server_link(character_id):
-    return 'https://imageserver.eveonline.com/Character/{}_128.jpg'.format(character_id)
+class EveOnlineAuthBackend(BaseAuthBackend):
+    login_image = 'img/auth_backends/eveonline.png'
+    app_name = 'eveonline'
+    app_key = 'EVEONLINE'
 
+    def handle_callback(self):
+        resp = self.backend_oauth.authorized_response()
 
-@blueprint.route('/login')
-def login():
-    print url_for('eveonline.callback', _external=True)
-    return oauth.authorize(callback=url_for('eveonline.callback', _external=True))
+        if resp is None:
+            return 'Access denied: reason=%s error=%s' % (
+                request.args['error_reason'],
+                request.args['error_description']
+            )
 
+        if isinstance(resp, Exception):
+            return 'Access denied: error=%s' % str(resp)
 
-@blueprint.route('/callback')
-def callback():
-    resp = oauth.authorized_response()
+        session['oauth_token'] = (resp['access_token'], '')
+        verify = self.backend_oauth.get('oauth/verify')
 
-    if resp is None:
-        return 'Access denied: reason=%s error=%s' % (
-            request.args['error_reason'],
-            request.args['error_description']
-        )
+        user = UserModel.query.filter_by(game='eveonline', character_id=verify.data['CharacterID']).first()
 
-    if isinstance(resp, Exception):
-        return 'Access denied: error=%s' % str(resp)
+        if user is None:
+            user = UserModel('eveonline', verify.data['CharacterID'], verify.data['CharacterName'])
+            user.login_count = 0
+            user.join_date = datetime.now()
 
-    session['oauth_token'] = (resp['access_token'], '')
-    verify = oauth.get('verify')
+        user.login_count += 1
 
-    user = UserModel.query.filter_by(game='eveonline', character_id=verify.data['CharacterID']).first()
+        db.session.add(user)
+        db.session.commit()
 
-    if user is None:
-        user = UserModel('eveonline', verify.data['CharacterID'], verify.data['CharacterName'])
-        user.login_count = 0
-        user.join_date = datetime.now()
-
-    user.login_count += 1
-
-    db.session.add(user)
-    db.session.commit()
-
-    return redirect(url_for('public.home'))
-
-@oauth.tokengetter
-def get_evesso_oauth_token():
-    return session.get('oauth_token')
+        login_user(user)

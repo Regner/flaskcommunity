@@ -2,9 +2,13 @@
 
 {% block body %}
     <h1>Test</h1>
-    {% for backend in context.login_info %}
-        <a href="{{ url_for(backend.link) }}">
-            <img src="{{ url_for('static', filename=backend.image) }}" />
-        </a>
-    {% endfor %}
+    <ul>
+        {% for backend in context.login_info %}
+            <li>
+                <a href="{{ url_for('auth.backend_login', backend_name=backend.name) }}">
+                    <img src="{{ url_for('static', filename=backend.image) }}" />
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock %}

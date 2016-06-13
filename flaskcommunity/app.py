@@ -6,7 +6,6 @@ from flask import Flask
 from flaskcommunity.settings import AppConfig
 from flaskcommunity.extentions import configure_extensions
 from flaskcommunity.utils.context_processors import configure_context_processors
-from flaskcommunity.auth import configure_auth_backends
 
 # Blueprints
 from flaskcommunity.public import views as public_views
@@ -22,7 +21,6 @@ def create_app():
     configure_blueprints(app)
     configure_extensions(app)
     configure_context_processors(app)
-    configure_auth_backends(app)
 
     return app
 

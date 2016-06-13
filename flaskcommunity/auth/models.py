@@ -5,9 +5,6 @@ from collections import namedtuple
 from flaskcommunity.extentions import db
 
 
-UserID = namedtuple('UserID', 'game character_id')
-
-
 class UserModel(db.Model):
     """ Model for users. """
 
@@ -19,12 +16,10 @@ class UserModel(db.Model):
     join_date = db.Column(db.DateTime)
     login_count = db.Column(db.Integer)
 
-    def __init__(self, game, character_id, character_name, get_portrait_func):
+    def __init__(self, game, character_id, character_name):
         self.game = game
         self.character_id = character_id
         self.name = character_name
-
-        self._get_portrait_func = get_portrait_func
 
     def __repr__(self):
         return '<UserModel {}: {}>'.format(self.game, self.character_id)
@@ -46,7 +41,4 @@ class UserModel(db.Model):
 
     # Flask-Login integration
     def get_id(self):
-        return UserID(game=self.game, character_id=self.character_id)
-
-    def get_portrait(self):
-        return self._get_portrait_func(self.character_id)
+        return self.game, self.character_id
